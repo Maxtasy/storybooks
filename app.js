@@ -1,13 +1,16 @@
 const path = require("path");
 const express = require("express");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const expressHandlebars = require("express-handlebars");
 const passport = require("passport");
 const expressSession = require("express-session");
+const MongoStore = require("connect-mongo")(expressSession);
 const connectDB = require("./config/db");
 const indexRouter = require("./routes/index");
 const authRouter = require("./routes/auth");
+const storiesRouter = require("./routes/stories");
 
 // Load Config
 dotenv.config({ path: "./config/config.env" });
@@ -19,13 +22,26 @@ connectDB();
 
 const app = express();
 
+// Body parser
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
 // Logging
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
+// Handlebars Helpers
+const { formatDate, truncate, stripTags, editIcon } = require("./helpers/hbs");
+
 // Handlebars
-app.engine(".hbs", expressHandlebars({ 
+app.engine(".hbs", expressHandlebars({
+  helpers: {
+    formatDate,
+    truncate,
+    stripTags,
+    editIcon
+  },
   extname: ".hbs",
   defaultLayout: "main"
 }));
@@ -34,12 +50,19 @@ app.engine(".hbs", expressHandlebars({
 app.use(expressSession({
   secret: "keyboard cat",
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
 
 // Passport Middleware
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Set Global Variable
+app.use(function (req, res, next) {
+  res.locals.user = req.user || null;
+  next();
+});
 
 // Static folder
 app.use(express.static(path.join(__dirname, "public")));
@@ -47,6 +70,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // Routes
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
+app.use("/stories", storiesRouter);
 
 app.set("view engine", ".hbs");
 

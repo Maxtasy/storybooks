@@ -1,6 +1,5 @@
 body {
-  color: #F3F3F3;
-  background-color: #0D0D0D;
+  background-color: #F3F3F3;
 }
 
 .login-container {
@@ -11,4 +10,8 @@ body {
 
 p {
   margin: 10px 0 !important;
+}
+
+.fa-small {
+  font-size: 16px !important;
 }
