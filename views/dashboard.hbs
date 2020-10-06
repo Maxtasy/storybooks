@@ -24,6 +24,17 @@
             <span class="dash-status">{{status}}</span>
           </td>
           <td>
+            <div class="btn-row">
+              <a href="/stories/edit/{{_id}}" class="btn">
+                <i class="fas fa-edit"></i>
+              </a>
+              <form action="/stories/{{_id}}" method="POST" id="delete_form">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="btn red">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </div>
           </td>
         </tr>
       {{/each}}
